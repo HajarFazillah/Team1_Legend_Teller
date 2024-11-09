@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
-    public static float moveSpeed = 2f;
+    public static float moveSpeed = 5f;
 
     private int score = 0;  // Player's score (total points)
     private int coinCount = 0;  // Number of coins collected

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class Background : MonoBehaviour
 {
@@ -13,7 +14,7 @@ public class Background : MonoBehaviour
             Transform background = transform.GetChild(i);
             background.position += Vector3.left * GameManager.moveSpeed * Time.deltaTime;
 
-            if (background.position.x <= -width)
+            if (background.position.x <= -width && transform.tag.Contains("Background"))
             {
                 background.position += new Vector3(width * 2, 0, 0);
             }

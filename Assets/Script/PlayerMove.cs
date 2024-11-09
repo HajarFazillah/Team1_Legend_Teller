@@ -20,9 +20,10 @@ public class PlayerMove : MonoBehaviour
     private bool isJumping;
     private bool isSliding;
     private float groundCheckDistance = 1f; //나중에 더 좋은 조작감으로 수정
-    private float obstacleCheckDistance = 1.5f;
+    private float obstacleCheckDistance = 0.5f;
     private float v;
     private Vector2 originalColliderSize;
+    private Vector2 originalColliderOffset;
 
     void Awake()
     {
@@ -31,6 +32,7 @@ public class PlayerMove : MonoBehaviour
         gameManager = FindObjectOfType<GameManager>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         originalColliderSize = capCollider.size;
+        originalColliderOffset = capCollider.offset;
         isJumping = false;
     }
 
@@ -79,12 +81,20 @@ public class PlayerMove : MonoBehaviour
             isGrounded = false;
         }
 
+        //Lv1, Lv2 Vertical Obstacle Check
+        RaycastHit2D hitRight = Physics2D.Raycast(rigid.position, Vector2.right, obstacleCheckDistance, LayerMask.GetMask("Ground"));
+        RaycastHit2D hitUp = Physics2D.Raycast(rigid.position, Vector2.up, obstacleCheckDistance, LayerMask.GetMask("Ground"));
+        if (hitRight.collider != null || hitUp.collider != null)
+        {
+            OnDamaged();
+        }
     }
 
     private void StartSliding()
     {
         isSliding = true;
-        capCollider.size = new Vector2(capCollider.size.x, capCollider.size.y / 2);
+        capCollider.size = new Vector2(capCollider.size.x, capCollider.size.y / 3);
+        capCollider.offset = new Vector2(capCollider.offset.x, capCollider.offset.y - 2);
         Debug.Log("슬라이딩 여부: " + isSliding);
         Debug.Log("\n" + originalColliderSize);
         Debug.Log("\n" + capCollider.size);
@@ -94,13 +104,14 @@ public class PlayerMove : MonoBehaviour
     {
         isSliding = false;
         capCollider.size = originalColliderSize;
+        capCollider.offset = originalColliderOffset;
     }
     
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.tag == "Obstacle")
         {
-            OnDamaged(collision.transform.position);
+            OnDamaged();
         }
 
         if (collision.gameObject.CompareTag("Ground"))
@@ -109,7 +120,7 @@ public class PlayerMove : MonoBehaviour
         }
     }
 
-    void OnDamaged(Vector2 targetPos)
+    void OnDamaged()
     {
         //health down
         gameManager.DecreasePlayerHealth();
