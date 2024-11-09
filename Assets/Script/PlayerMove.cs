@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Unity.VisualScripting.Antlr3.Runtime;
@@ -8,7 +8,9 @@ public class PlayerMove : MonoBehaviour
 {
     Rigidbody2D rigid;
     CapsuleCollider2D capCollider;
+    SpriteRenderer spriteRenderer;
     GameManager gameManager;
+    Animator anim;
 
     public int playerHealth = 3;
 
@@ -17,7 +19,7 @@ public class PlayerMove : MonoBehaviour
     private bool isGrounded;
     private bool isJumping;
     private bool isSliding;
-    private float groundCheckDistance = 1f; //³ªÁß¿¡ ´õ ÁÁÀº Á¶ÀÛ°¨À¸·Î ¼öÁ¤
+    private float groundCheckDistance = 1f; //ë‚˜ì¤‘ì— ë” ì¢‹ì€ ì¡°ì‘ê°ìœ¼ë¡œ ìˆ˜ì •
     private float obstacleCheckDistance = 1.5f;
     private float v;
     private Vector2 originalColliderSize;
@@ -27,6 +29,7 @@ public class PlayerMove : MonoBehaviour
         rigid = GetComponent<Rigidbody2D>();
         capCollider = GetComponent<CapsuleCollider2D>();
         gameManager = FindObjectOfType<GameManager>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
         originalColliderSize = capCollider.size;
         isJumping = false;
     }
@@ -40,7 +43,7 @@ public class PlayerMove : MonoBehaviour
         bool sUp = Input.GetKeyUp(KeyCode.DownArrow);
 
         // Jump
-        if (jDown && jumpCount < 2) // isGrounded¸¦ Ãß°¡ÇÏ¿© Ã¹ Á¡ÇÁ¸¸Å­Àº Áö¸é¿¡¼­ °¡´ÉÇÏµµ·Ï
+        if (jDown && jumpCount < 2) // isGroundedë¥¼ ì¶”ê°€í•˜ì—¬ ì²« ì í”„ë§Œí¼ì€ ì§€ë©´ì—ì„œ ê°€ëŠ¥í•˜ë„ë¡
         {
             if (!isJumping || jumpCount == 1)
             {
@@ -82,7 +85,7 @@ public class PlayerMove : MonoBehaviour
     {
         isSliding = true;
         capCollider.size = new Vector2(capCollider.size.x, capCollider.size.y / 2);
-        Debug.Log("½½¶óÀÌµù ¿©ºÎ: " + isSliding);
+        Debug.Log("ìŠ¬ë¼ì´ë”© ì—¬ë¶€: " + isSliding);
         Debug.Log("\n" + originalColliderSize);
         Debug.Log("\n" + capCollider.size);
     }
@@ -97,13 +100,45 @@ public class PlayerMove : MonoBehaviour
     {
         if (collision.gameObject.tag == "Obstacle")
         {
-            Debug.Log("Ãæµ¹ ¹ß»ı!");
-            gameManager.DecreasePlayerHealth();
+            OnDamaged(collision.transform.position);
         }
 
         if (collision.gameObject.CompareTag("Ground"))
         {
             isJumping = false;
         }
+    }
+
+    void OnDamaged(Vector2 targetPos)
+    {
+        //health down
+        gameManager.DecreasePlayerHealth();
+
+        gameObject.layer = 9;
+
+        //View Alpha
+        spriteRenderer.color = new Color(1, 1, 1, 0.4f);
+
+        //ì—¬ê¸°ì— í”¼ê²© ì• ë‹ˆë©”ì´ì…˜ ë„£ê¸°
+
+        Invoke("OffDamaged", 3);
+    }
+
+    void OffDamaged()
+    {
+        gameObject.layer = 10;
+        spriteRenderer.color = new Color(1, 1, 1, 1);
+    }
+
+    public void OnDie()
+    {
+        //Sprite Alpha
+        spriteRenderer.color = new Color(1, 1, 1, 0.4f);
+        //Sprite Flip Y
+        spriteRenderer.flipX = true;
+        //Collider Disable
+        //capCollider.enabled = false;
+        //Die Effect Jump
+        rigid.AddForce(Vector2.up * 5, ForceMode2D.Impulse);
     }
 }
