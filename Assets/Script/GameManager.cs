@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
 
     private int score = 0;  // Player's score (total points)
     private int coinCount = 0;  // Number of coins collected
+    
     public TMP_Text scoreText;  // UI Text element to display the score
     public TMP_Text coinCountText;  // UI Text element to display the coin count
 
@@ -32,7 +33,6 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         UpdateScoreText();
-        UpdateItemCountText();  // Update the coin counter UI
         menuSet.SetActive(false);
     }
 
@@ -65,7 +65,6 @@ public class GameManager : MonoBehaviour
     public void AddCoin()  // New method to update coin count
     {
         coinCount++;
-        UpdateItemCountText();
     }
 
     private void UpdateScoreText()
@@ -74,10 +73,10 @@ public class GameManager : MonoBehaviour
             scoreText.text = "Score: " + score;
     }
 
-    private void UpdateItemCountText()  // Update coin count UI
+    private void UpdateCoinCountText()
     {
         if (coinCountText != null)
-            coinCountText.text = "Coins: " + coinCount;
+            coinCountText.text = "Total Coins Collected: " + coinCount;  // Show final coin count
     }
 
     public void GameStart()
