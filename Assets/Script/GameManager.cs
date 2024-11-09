@@ -14,6 +14,8 @@ public class GameManager : MonoBehaviour
     public TMP_Text scoreText;  // UI Text element to display the score
     public TMP_Text coinCountText;  // UI Text element to display the coin count
 
+    public GameObject menuSet;
+
     private void Awake()
     {
         // Setup singleton instance
@@ -31,6 +33,27 @@ public class GameManager : MonoBehaviour
     {
         UpdateScoreText();
         UpdateItemCountText();  // Update the coin counter UI
+        menuSet.SetActive(false);
+    }
+
+    void Update()
+    {
+
+        if (Input.GetButtonDown("Cancel"))
+        {
+            if (menuSet.activeSelf)
+            {
+                menuSet.SetActive(false);
+                Time.timeScale = 1f;
+            }
+            else
+            {
+                menuSet.SetActive(true);
+                Time.timeScale = 0f;
+            }
+        }
+        else
+            Time.timeScale = 1f;
     }
 
     public void AddScore(int value)
@@ -75,4 +98,5 @@ public class GameManager : MonoBehaviour
     {
 
     }
+
 }
