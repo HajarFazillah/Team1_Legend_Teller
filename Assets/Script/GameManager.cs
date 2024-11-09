@@ -52,7 +52,7 @@ public class GameManager : MonoBehaviour
                 Time.timeScale = 0f;
             }
         }
-        else
+        else if (!menuSet.activeSelf)
             Time.timeScale = 1f;
     }
 
