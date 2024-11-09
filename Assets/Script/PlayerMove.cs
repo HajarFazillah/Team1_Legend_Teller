@@ -15,6 +15,7 @@ public class PlayerMove : MonoBehaviour
     public float jumpForce = 5f;
     private int jumpCount = 0;
     private bool isGrounded;
+    private bool isJumping;
     private bool isSliding;
     private float groundCheckDistance = 1f; //나중에 더 좋은 조작감으로 수정
     private float obstacleCheckDistance = 1.5f;
@@ -27,6 +28,7 @@ public class PlayerMove : MonoBehaviour
         capCollider = GetComponent<CapsuleCollider2D>();
         gameManager = FindObjectOfType<GameManager>();
         originalColliderSize = capCollider.size;
+        isJumping = false;
     }
 
     void Update()
@@ -38,17 +40,44 @@ public class PlayerMove : MonoBehaviour
         bool sUp = Input.GetKeyUp(KeyCode.DownArrow);
 
         // Jump
-        if (jDown && jumpCount < 2)
+        if (jDown && jumpCount < 2) // isGrounded를 추가하여 첫 점프만큼은 지면에서 가능하도록
         {
-            rigid.velocity = Vector2.zero;
-            rigid.velocity = new Vector2(rigid.velocity.x, jumpForce);
-            jumpCount++;
+            if (!isJumping || jumpCount == 1)
+            {
+                isJumping = true;
+                rigid.velocity = new Vector2(rigid.velocity.x, jumpForce);
+                jumpCount++;
+            }
         }
 
-        //Sliding
+        // Sliding
         if (sDown && !sUp && !isSliding) StartSliding();
-        else if(!sDown || !isGrounded || sUp) StopSliding();
+        else if (!sDown || !isGrounded || sUp) StopSliding();
     }
+
+    private void FixedUpdate()
+    {
+        Debug.DrawRay(rigid.position, Vector2.down * groundCheckDistance, new Color(0, 1, 0));
+        Debug.DrawRay(rigid.position, Vector2.up * groundCheckDistance, new Color(0, 1, 0));
+        Debug.DrawRay(rigid.position, Vector2.right * obstacleCheckDistance, new Color(0, 1, 0));
+
+        //check whether player is on ground
+        RaycastHit2D hitDown = Physics2D.Raycast(rigid.position, Vector2.down, groundCheckDistance, LayerMask.GetMask("Ground"));
+        if (hitDown.collider != null)
+        {
+            if (!isGrounded)
+            {
+                isGrounded = true;
+                jumpCount = 0;
+            }
+        }
+        else
+        {
+            isGrounded = false;
+        }
+
+    }
+
     private void StartSliding()
     {
         isSliding = true;
@@ -71,24 +100,10 @@ public class PlayerMove : MonoBehaviour
             Debug.Log("충돌 발생!");
             gameManager.DecreasePlayerHealth();
         }
-    }
 
-    private void FixedUpdate()
-    {
-        Debug.DrawRay(rigid.position, Vector2.down * groundCheckDistance, new Color(0, 1, 0));
-        Debug.DrawRay(rigid.position, Vector2.up * groundCheckDistance, new Color(0, 1, 0));
-        Debug.DrawRay(rigid.position, Vector2.right * obstacleCheckDistance, new Color(0, 1, 0));
-
-        //check whether player is on ground
-        RaycastHit2D hitDown = Physics2D.Raycast(rigid.position, Vector2.down, groundCheckDistance, LayerMask.GetMask("Ground"));
-        if (hitDown.collider != null)
+        if (collision.gameObject.CompareTag("Ground"))
         {
-            isGrounded = hitDown.collider.CompareTag("Ground");
-            if (isGrounded)
-                jumpCount = 0;
-            else
-                isGrounded = false;
+            isJumping = false;
         }
-
     }
 }
